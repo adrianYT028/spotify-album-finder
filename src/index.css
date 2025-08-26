@@ -1,0 +1,147 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Background image layer (behind all page content) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('/1093974.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+/* Subtle full-page overlay to mute the background image and add a light blur; sits between bg and content */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hero area centered over the background image. The logo in the image will remain
+   visible behind a subtle overlay; the heading sits above the logo and the search bar below. */
+.hero {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px 40px;
+  position: relative;
+  z-index: 1; /* place hero above the page overlay */
+}
+.hero-inner {
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  /* stronger dark overlay to ensure text and controls are readable */
+  background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.35));
+  padding: 30px 20px;
+  border-radius: 12px;
+  position: relative;
+  z-index: 2;
+}
+.search-group {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+.search-group .form-control {
+  width: 320px;
+  max-width: 85vw;
+  height: 40px;
+  border-radius: 6px 0 0 6px;
+  border: none;
+  padding-left: 12px;
+}
+.search-group .btn {
+  border-radius: 0 6px 6px 0;
+  background-color: #ffd166;
+  border: none;
+  color: #111;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.fancy-wrap { padding: 12px 0; }
+.fancy-text {
+  font-family: 'Georgia', serif;
+  font-size: 1.6rem;
+  color: #ffd166;
+  text-transform: capitalize;
+  letter-spacing: 0.6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  margin: 0;
+}
