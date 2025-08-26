@@ -7,66 +7,41 @@ import {
   Card,
   Row,
 } from "react-bootstrap";
-import { useState, useEffect } from "react";
-
-const clientId = import.meta.env.VITE_CLIENT_ID;
-const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
+import { useState } from "react";
 
 function App() {
   const [searchInput, setSearchInput] = useState("");
-  const [accessToken, setAccessToken] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [albums, setAlbums] = useState([]);
 
-  useEffect(() => {
-    let authParams = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body:
-        "grant_type=client_credentials&client_id=" +
-        clientId +
-        "&client_secret=" +
-        clientSecret,
-    };
-
-    fetch("https://accounts.spotify.com/api/token", authParams)
-      .then((result) => result.json())
-      .then((data) => {
-        setAccessToken(data.access_token);
-      });
-  }, []);
-
   async function search() {
-    let artistParams = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + accessToken,
-      },
-    };
+    setError("");
+    if (!searchInput || searchInput.trim() === "") {
+      setError("Please enter an artist name");
+      return;
+    }
+    setLoading(true);
 
-    // Get Artist
-    const artistID = await fetch(
-      "https://api.spotify.com/v1/search?q=" + searchInput + "&type=artist",
-      artistParams
-    )
-      .then((result) => result.json())
-      .then((data) => {
-        return data.artists.items[0].id;
-      });
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchInput)}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        setError(errorData.error || 'Search failed');
+        setAlbums([]);
+        setLoading(false);
+        return;
+      }
 
-    // Get Artist Albums
-    await fetch(
-      "https://api.spotify.com/v1/artists/" +
-        artistID +
-        "/albums?include_groups=album&market=US&limit=50",
-      artistParams
-    )
-      .then((result) => result.json())
-      .then((data) => {
-        setAlbums(data.items);
-      });
+      const data = await response.json();
+      setAlbums(data.albums || []);
+    } catch (err) {
+      setError(err.message || "Search failed");
+      setAlbums([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -91,6 +66,10 @@ function App() {
               <Button onClick={search}>Search</Button>
             </InputGroup>
           </div>
+
+          {loading && <p style={{ color: '#fff', marginTop: 12 }}>Loading…</p>}
+          {error && <p style={{ color: '#ffb4b4', marginTop: 12 }}>{error}</p>}
+
         </div>
       </div>
 
