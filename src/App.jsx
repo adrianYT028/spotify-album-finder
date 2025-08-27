@@ -7,71 +7,95 @@ import {
   Card,
   Row,
 } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const clientId = import.meta.env.VITE_CLIENT_ID;
+const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
 
 function App() {
   const [searchInput, setSearchInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [accessToken, setAccessToken] = useState("");
   const [albums, setAlbums] = useState([]);
 
+  useEffect(() => {
+    let authParams = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body:
+        "grant_type=client_credentials&client_id=" +
+        clientId +
+        "&client_secret=" +
+        clientSecret,
+    };
+
+    fetch("https://accounts.spotify.com/api/token", authParams)
+      .then((result) => result.json())
+      .then((data) => {
+        setAccessToken(data.access_token);
+      });
+  }, []);
+
   async function search() {
-    setError("");
-    if (!searchInput || searchInput.trim() === "") {
-      setError("Please enter an artist name");
-      return;
-    }
-    setLoading(true);
+    let artistParams = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
+      },
+    };
 
-    try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchInput)}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        setError(errorData.error || 'Search failed');
-        setAlbums([]);
-        setLoading(false);
-        return;
-      }
+    // Get Artist
+    const artistID = await fetch(
+      "https://api.spotify.com/v1/search?q=" + searchInput + "&type=artist",
+      artistParams
+    )
+      .then((result) => result.json())
+      .then((data) => {
+        return data.artists.items[0].id;
+      });
 
-      const data = await response.json();
-      setAlbums(data.albums || []);
-    } catch (err) {
-      setError(err.message || "Search failed");
-      setAlbums([]);
-    } finally {
-      setLoading(false);
-    }
+    // Get Artist Albums
+    await fetch(
+      "https://api.spotify.com/v1/artists/" +
+        artistID +
+        "/albums?include_groups=album&market=US&limit=50",
+      artistParams
+    )
+      .then((result) => result.json())
+      .then((data) => {
+        setAlbums(data.items);
+      });
   }
 
   return (
     <>
-      <div className="hero">
-        <div className="hero-inner">
-          <h2 className="fancy-text">Search for all the albums of your fav artist</h2>
-
-          <div className="search-group">
-            <InputGroup>
-              <FormControl
-                placeholder="Search For Artist"
-                type="input"
-                aria-label="Search for an Artist"
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    search();
-                  }
-                }}
-                onChange={(event) => setSearchInput(event.target.value)}
-              />
-              <Button onClick={search}>Search</Button>
-            </InputGroup>
-          </div>
-
-          {loading && <p style={{ color: '#fff', marginTop: 12 }}>Loading…</p>}
-          {error && <p style={{ color: '#ffb4b4', marginTop: 12 }}>{error}</p>}
-
-        </div>
-      </div>
+      <Container>
+        <InputGroup>
+          <FormControl
+            placeholder="Search For Artist"
+            type="input"
+            aria-label="Search for an Artist"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                search();
+              }
+            }}
+            onChange={(event) => setSearchInput(event.target.value)}
+            style={{
+              width: "300px",
+              height: "35px",
+              borderWidth: "0px",
+              borderStyle: "solid",
+              borderRadius: "5px",
+              marginRight: "10px",
+              paddingLeft: "10px",
+            }}
+          />
+          <Button onClick={search}>Search</Button>
+        </InputGroup>
+      </Container>
 
       <Container>
         <Row
@@ -144,4 +168,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
